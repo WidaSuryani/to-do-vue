@@ -1,48 +1,70 @@
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+// import { ref, onMounted, computed, watch } from 'vue'
 
-const todos = ref([]);
-const name = ref('')
+import { onMounted } from 'vue'
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from './firebase';
 
-const input_content = ref('')
-const input_category = ref(null)
-
-const todos_asc = computed(() => todos.value.slice().sort((a, b) => {
-  return new Date(a.createdAt) - new Date(b.createdAt);
-}));
-
-watch(name, (newVal) => {
-	localStorage.setItem('name', newVal)
+onMounted( async () => {
+	const querySnapshot = await getDocs(collection(db, "cities"));
+	let fbTodos = []
+	querySnapshot.forEach((doc) => {
+ 	 console.log(doc.id, " => ", doc.data());
+	 const todo = {
+		id: doc.id,
+		...doc.data(),
+	 }
+	 fbTodos(todo)
+	});
 })
 
-watch(todos, (newVal) => {
-	localStorage.setItem('todos', JSON.stringify(newVal))
-}, {
-	deep: true
-})
 
-const addTodo = () => {
-	if (input_content.value.trim() === '' || input_category.value === null) {
-		return
-	}
 
-	todos.value.push({
-		content: input_content.value,
-		category: input_category.value,
-		done: false,
-		editable: false,
-		createdAt: new Date().getTime()
-	})
-}
 
-const removeTodo = (todo) => {
-	todos.value = todos.value.filter((t) => t !== todo)
-}
+// const todos = ref([]);
+// const name = ref('')
 
-onMounted(() => {
-	name.value = localStorage.getItem('name') || ''
-	todos.value = JSON.parse(localStorage.getItem('todos')) || []
-})
+// const input_content = ref('')
+// const input_category = ref(null)
+
+// const todos_asc = computed(() => todos.value.slice().sort((a, b) => {
+//   return new Date(a.createdAt) - new Date(b.createdAt);
+// }));
+
+// watch(name, (newVal) => {
+// 	localStorage.setItem('name', newVal)
+// })
+
+// watch(todos, (newVal) => {
+// 	localStorage.setItem('todos', JSON.stringify(newVal))
+// }, {
+// 	deep: true
+// })
+
+// const addTodo = () => {
+// 	if (input_content.value.trim() === '' || input_category.value === null) {
+// 		return
+// 	}
+
+// 	todos.value.push({
+// 		content: input_content.value,
+// 		category: input_category.value,
+// 		done: false,
+// 		editable: false,
+// 		createdAt: new Date().getTime()
+// 	})
+// }
+
+// const removeTodo = (todo) => {
+// 	todos.value = todos.value.filter((t) => t !== todo)
+// }
+
+// onMounted(() => {
+// 	name.value = localStorage.getItem('name') || ''
+// 	todos.value = JSON.parse(localStorage.getItem('todos')) || []
+// })
+
+
 </script>
 
 <template>
@@ -101,7 +123,7 @@ onMounted(() => {
 			<h3>TODO LIST</h3>
 			<div class="list" id="todo-list">
 
-        <div v-for="todo in todos_asc" :key="todo.id" :class="`todo-item ${todo.done ? 'done' : ''}`">
+        <div v-for="todo in todo" :key="todo.id" :class="`todo-item ${todo.done ? 'done' : ''}`">
 					<label>
 						<input type="checkbox" v-model="todo.done" />
 						<span :class="`bubble ${
