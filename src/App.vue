@@ -1,87 +1,88 @@
 <script setup>
-// import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 
-import { onMounted } from 'vue'
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from './firebase';
+// import { onMounted } from 'vue'
+// import { collection, getDocs } from 'firebase/firestore';
+// import { db } from './firebase';
 
-onMounted( async () => {
-	const querySnapshot = await getDocs(collection(db, "cities"));
-	let fbTodos = []
-	querySnapshot.forEach((doc) => {
- 	 console.log(doc.id, " => ", doc.data());
-	 const todo = {
-		id: doc.id,
-		...doc.data(),
-	 }
-	 fbTodos(todo)
-	});
+// onMounted( async () => {
+// 	const querySnapshot = await getDocs(collection(db, "cities"));
+// 	let fbTodos = []
+// 	querySnapshot.forEach((doc) => {
+//  	 console.log(doc.id, " => ", doc.data());
+// 	 const todo = {
+// 		id: doc.id,
+// 		...doc.data(),
+// 	 }
+// 	 fbTodos(todo)
+// 	});
+// })
+
+
+
+
+const todos = ref([]);
+const name = ref('')
+
+const input_content = ref('')
+const input_category = ref(null)
+
+const todos_asc = computed(() => todos.value.slice().sort((a, b) => {
+  return new Date(a.createdAt) - new Date(b.createdAt);
+}));
+
+watch(name, (newVal) => {
+	localStorage.setItem('name', newVal)
 })
 
+watch(todos, (newVal) => {
+	localStorage.setItem('todos', JSON.stringify(newVal))
+}, {
+	deep: true
+})
 
+const addTodo = () => {
+	if (input_content.value.trim() === '' || input_category.value === null) {
+		return
+	}
 
+	todos.value.push({
+		content: input_content.value,
+		category: input_category.value,
+		done: false,
+		editable: false,
+		createdAt: new Date().getTime()
+	})
+}
 
-// const todos = ref([]);
-// const name = ref('')
+const removeTodo = (todo) => {
+	todos.value = todos.value.filter((t) => t !== todo)
+}
 
-// const input_content = ref('')
-// const input_category = ref(null)
-
-// const todos_asc = computed(() => todos.value.slice().sort((a, b) => {
-//   return new Date(a.createdAt) - new Date(b.createdAt);
-// }));
-
-// watch(name, (newVal) => {
-// 	localStorage.setItem('name', newVal)
-// })
-
-// watch(todos, (newVal) => {
-// 	localStorage.setItem('todos', JSON.stringify(newVal))
-// }, {
-// 	deep: true
-// })
-
-// const addTodo = () => {
-// 	if (input_content.value.trim() === '' || input_category.value === null) {
-// 		return
-// 	}
-
-// 	todos.value.push({
-// 		content: input_content.value,
-// 		category: input_category.value,
-// 		done: false,
-// 		editable: false,
-// 		createdAt: new Date().getTime()
-// 	})
-// }
-
-// const removeTodo = (todo) => {
-// 	todos.value = todos.value.filter((t) => t !== todo)
-// }
-
-// onMounted(() => {
-// 	name.value = localStorage.getItem('name') || ''
-// 	todos.value = JSON.parse(localStorage.getItem('todos')) || []
-// })
+onMounted(() => {
+	name.value = localStorage.getItem('name') || ''
+	todos.value = JSON.parse(localStorage.getItem('todos')) || []
+})
 
 
 </script>
 
 <template>
-	<main class="app">
+	<main class="bg-[#eeeee]">
 		
-		<section class="greeting">
-			<h2 class="title">
+		<section class="flex">
+			<h2 class="font-bold text-2xl">
 				What's up, <input type="text" id="name" placeholder="Name here" v-model="name">
 			</h2>
 		</section>
 
-		<section class="create-todo">
+		<section class="block w-full text-md px-5 text-[#313154] rounded-lg mb-6">
 			<h3>CREATE A TODO</h3>
 
 			<form id="new-todo-form" @submit.prevent="addTodo">
 				<h4>What's on your todo list?</h4>
 				<input 
+					class="bg-white"
 					type="text" 
 					name="content" 
 					id="content" 
@@ -89,33 +90,36 @@ onMounted( async () => {
 					v-model="input_content" />
 				
 				<h4>Pick a category</h4>
-				<div class="options">
+				<div class="grid grid-cols-2 gap-4 mb-6">
+					<div>
+						<label class="flex flex-col items-center justify-center p-6 bg-[#e4e2dd] rounded-lg shadow-lg cursor-pointer">
+							<input 
+								type="radio" 
+								name="category" 
+								id="category1" 
+								value="business"
+								v-model="input_category" />
+							<span class="bubble business"></span>
+							<div>Business</div>
+						</label>
+					</div>
 
-					<label>
-						<input 
-							type="radio" 
-							name="category" 
-							id="category1" 
-							value="business"
-							v-model="input_category" />
-						<span class="bubble business"></span>
-						<div>Business</div>
-					</label>
-
-					<label>
-						<input 
-							type="radio" 
-							name="category" 
-							id="category2" 
-							value="personal"
-							v-model="input_category" />
-						<span class="bubble personal"></span>
-						<div>Personal</div>
-					</label>
-
+					<div>
+						<label class="flex flex-col items-center justify-center p-6 bg-[#e4e2dd] rounded-lg shadow-lg cursor-pointer">
+							<input 
+								type="radio" 
+								name="category" 
+								id="category2" 
+								value="personal"
+								v-model="input_category" />
+							<span class="bubble personal"></span>
+							<div>Personal</div>
+						</label>
+					</div>
 				</div>
-
+			<div class="block w-full text-sm p-6 text-white bg-[#EA40A4] rounded-lg shadow-lg mb-6">
 				<input type="submit" value="Add todo" />
+			</div>	
 			</form>
 		</section>
 
@@ -123,7 +127,7 @@ onMounted( async () => {
 			<h3>TODO LIST</h3>
 			<div class="list" id="todo-list">
 
-        <div v-for="todo in todo" :key="todo.id" :class="`todo-item ${todo.done ? 'done' : ''}`">
+        <div v-for="todo in todos_asc" :key="todo.id" :class="`todo-item ${todo.done ? 'done' : ''}`">
 					<label>
 						<input type="checkbox" v-model="todo.done" />
 						<span :class="`bubble ${
