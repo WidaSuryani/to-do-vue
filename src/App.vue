@@ -117,13 +117,13 @@ onMounted(() => {
 						</label>
 					</div>
 				</div>
-			<div class="block w-full text-sm p-6 text-white bg-[#EA40A4] rounded-lg shadow-lg mb-6">
+			<div class="block w-full text-sm p-6 text-white bg-[#EA40A4] rounded-lg shadow-lg mb-6 text-center cursor-pointer">
 				<input type="submit" value="Add todo" />
 			</div>	
 			</form>
 		</section>
 
-		<section class="todo-list">
+		<section class="m-4 flex items-center bg-white p-4 rounded-lg shadow-lg mb-6">
 			<h3>TODO LIST</h3>
 			<div class="list" id="todo-list">
 
